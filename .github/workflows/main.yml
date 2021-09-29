@@ -1,0 +1,115 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        sudo apt-add-repository ppa:hrzhu/sdl2-backport
+        sudo apt-get update
+        sudo apt-get install ninja-build libsdl2-dev
+
+    - name: CMake configure (Release)
+      run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build (Release)
+      run: ninja -C release
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.repository.name }} Artifacts Linux
+        path: |
+          release/*.so*
+
+
+  macos:
+    name: macOS (CMake)
+    runs-on: macos-latest
+    env:
+      CXXFLAGS: -I/usr/local/include/SDL2
+      LDFLAGS: -L/usr/local/lib
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Checkout SDL2
+      uses: actions/checkout@v4
+      with:
+        repository: FNA-NET/SDL
+        path: build/SDL2
+        ref: fna-net-patch-sdl2
+
+    - name: Configure CMake SDL2
+      working-directory: build/SDL2
+      run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64\;x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11
+    - name: Build SDL2
+      working-directory: build/SDL2
+      run: sudo cmake --build build/ --config Release --target install
+
+    - name: Install dependencies
+      run: brew install ninja
+
+    - name: CMake configure (Release)
+      run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64\;x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11
+
+    - name: Build (Release)
+      run: ninja -C release
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.repository.name }} Artifacts macOS
+        path: |
+          release/*.dylib
+
+  windows-msvc:
+    name: Windows (MSVC)
+    runs-on: windows-latest
+    env:
+      SDL_VERSION: 2.26.0
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Cache SDL
+      uses: actions/cache@v4
+      env:
+        cache-name: cache-sdl
+      with:
+        path: C:\SDL
+        key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+    - name: Download SDL if not cached
+      run: |
+        if (-Not (Test-Path C:\SDL))
+        {
+            Invoke-WebRequest "https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION/SDL2-devel-$env:SDL_VERSION-VC.zip" -OutFile C:\SDL.zip
+            Expand-Archive C:\SDL.zip -DestinationPath C:\
+        }
+
+    - name: CMake configure (Release)
+      run: |
+        $env:LDFLAGS =  "/LIBPATH:C:\SDL2-$env:SDL_VERSION\lib\x64 "
+        cmake -B release -G "Visual Studio 17 2022" . -DCMAKE_BUILD_TYPE=Release `
+          -A x64 `
+          -DSDL2_INCLUDE_DIRS="C:\SDL2-$env:SDL_VERSION\include" `
+          -DSDL2_LIBRARIES="SDL2;SDL2main"
+
+    - name: Build (Release)
+      run: cmake --build release --config Release
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ github.event.repository.name }} Artifacts Windows
+        path: |
+          release/Release/*.dll
+          release/Release/*.lib

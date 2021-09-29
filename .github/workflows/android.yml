@@ -1,0 +1,45 @@
+name: Build (Android)
+
+on: [push, pull_request]
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: fna-net-patch-sdl2
+
+      - name: Checkout SDL2
+        uses: actions/checkout@v4
+        with:
+          repository: FNA-NET/SDL
+          path: build/SDL2
+          ref: fna-net-patch-sdl2
+
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r21e
+
+      - name: Build SDL2
+        run: ./build/SDL2/build-scripts/androidbuildlibs.sh
+
+      - name: Create folders
+        run: mkdir -p out/x86_64 out/arm64-v8a && ls -l .
+
+      - name: Configure CMake (arm64)
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=$(dirname $(which ndk-build))/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DSDL2_INCLUDE_DIRS=${{ github.workspace }}/build/SDL2/include -DSDL2_LIBRARIES=${{ github.workspace }}/build/SDL2/build/android/lib/arm64-v8a/libSDL2.so
+      - name: Build (arm64)
+        run: cmake --build build/ --config Release && cp build/*.so out/arm64-v8a/
+
+      - name: Configure CMake (x86_64)
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE=$(dirname $(which ndk-build))/build/cmake/android.toolchain.cmake -DANDROID_ABI=x86_64 -DSDL2_INCLUDE_DIRS=${{ github.workspace }}/build/SDL2/include -DSDL2_LIBRARIES=${{ github.workspace }}/build/SDL2/build/android/lib/x86_64/libSDL2.so
+      - name: Build (x86_64)
+        run: cmake --build build/ --clean-first --config Release && cp build/*.so out/x86_64/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }} Artifacts (Android)
+          path: out/

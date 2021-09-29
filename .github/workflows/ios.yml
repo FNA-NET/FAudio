@@ -1,0 +1,41 @@
+name: Build (iOS/tvOS)
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: ${{ matrix.platform.name }}
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+        - { name: iOS, target: FAudio-iOS, sdk: iphoneos }
+        - { name: iOS Sim, target: FAudio-iOS, sdk: iphonesimulator }
+        - { name: tvOS, target: FAudio-tvOS, sdk: appletvos }
+        - { name: tvOS Sim, target: FAudio-tvOS, sdk: appletvsimulator }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          path: ${{ github.event.repository.name }}
+          ref: fna-net-patch-sdl2
+
+      - name: Checkout SDL2
+        uses: actions/checkout@v4
+        with:
+          repository: FNA-NET/SDL
+          path: SDL2
+          ref: fna-net-patch-sdl2
+
+      - name: Build
+        working-directory: ${{ github.event.repository.name }}
+        run: xcodebuild -project Xcode/FAudio.xcodeproj -target '${{ matrix.platform.target }}' -configuration Release -sdk ${{ matrix.platform.sdk }} clean build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }} Artifacts ${{ matrix.platform.name }}
+          path: ${{ github.event.repository.name }}/Xcode/build/Release-*/*.a

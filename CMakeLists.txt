@@ -49,10 +49,16 @@ endif()
 # Add our repository's module path to CMake's module path list
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
 # Platform Flags
 if(APPLE)
 	set(CMAKE_MACOSX_RPATH ON)
-	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+	set(CMAKE_INSTALL_RPATH "@loader_path")
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
+elseif(UNIX)
+	set(CMAKE_INSTALL_RPATH $ORIGIN)
 elseif(WIN32)
 	# "FAudio.dll", not "libFAudio.dll"
 	set(CMAKE_SHARED_LIBRARY_PREFIX "")
