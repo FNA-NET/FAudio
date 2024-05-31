@@ -1,0 +1,42 @@
+name: Build (UWP)
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: UWP
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: FAudio
+          ref: fna-net-patch-uwp
+
+      - name: Checkout SDL2
+        uses: actions/checkout@v4
+        with:
+          repository: FNA-NET/SDL
+          path: SDL2
+          ref: fna-net-patch
+
+      - name: Build SDL2
+        run: msbuild SDL2/VisualC-WinRT/SDL-UWP.sln /m /p:BuildInParallel=true /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0
+
+      - name: Build
+        run: msbuild FAudio/visualc-winrt/FAudio.sln /p:BuildInParallel=true /p:configuration=release /p:platform=x64 /p:WindowsTargetPlatformVersion=10.0.17763.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }} Artifacts UWP x64
+          path: |
+            FAudio/visualc-winrt/x64/Release/FAudio/*.dll
+            FAudio/visualc-winrt/x64/Release/FAudio/*.pri
