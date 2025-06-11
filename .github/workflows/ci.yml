@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 env:
   SDL2_VERSION: 2.30.11
-  SDL3_VERSION: 3.2.0
+  SDL3_VERSION: 3.4.0
 
 jobs:
   linux-SDL2:
@@ -336,3 +336,39 @@ jobs:
           sudo pkg install -y cmake ninja sdl3
           cmake -B build -G Ninja .
           cmake --build build --verbose -- -j`sysctl -n hw.ncpu`
+
+
+
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r28c
+
+    - name: Clone SDL3
+      run: git clone --depth 1 --branch release-$SDL3_VERSION https://github.com/libsdl-org/SDL.git
+
+    - name: Build SDL3
+      run: |
+        cd SDL
+        ./build-scripts/androidbuildlibs.sh
+        cd ..
+
+    - name: Configure CMake (Release)
+      run: cmake -B release -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$(dirname $(which ndk-build))/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-21 -DSDL3_INCLUDE_DIRS=${GITHUB_WORKSPACE}/SDL/include -DSDL3_LIBRARIES=${GITHUB_WORKSPACE}/SDL/build/android/lib/arm64-v8a/libSDL3.so
+
+    - name: Build (Release)
+      run: cmake --build release/ --config Release
+
+    - name: Archive build result
+      uses: actions/upload-artifact@v4
+      with:
+        name: FAudio-android-arm64
+        path: release/*.so
