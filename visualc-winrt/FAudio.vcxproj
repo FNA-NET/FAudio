@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\F3DAudio.c" />
     <ClCompile Include="..\src\FAudio.c" />
+    <ClCompile Include="..\src\FAudioFX_collector.c" />
     <ClCompile Include="..\src\FAudio_internal.c" />
     <ClCompile Include="..\src\FAudio_internal_simd.c" />
     <ClCompile Include="..\src\FAudio_operationset.c" />
@@ -28,7 +29,7 @@
     <ClCompile Include="..\src\FAPOFX_reverb.c" />
     <ClCompile Include="..\src\FAPOFX_echo.c" />
     <ClCompile Include="..\src\XNA_Song.c" />
-    <ClCompile Include="..\src\FAudio_platform_sdl2.c" />
+    <ClCompile Include="..\src\FAudio_platform_sdl3.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\F3DAudio.h" />
@@ -50,21 +51,22 @@
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.10240.0</WindowsTargetPlatformMinVersion>
-    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.0.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -82,39 +84,39 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
-    <IncludePath>..\..\SDL2\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\SDL2\VisualC-WinRT\$(Platform)\$(Configuration)\SDL-UWP;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\SDL3-uwp\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\SDL3-uwp\VisualC-WinRT\$(Platform)\$(Configuration)\SDL-UWP;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
-    <IncludePath>..\..\SDL2\include;..\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\SDL2\VisualC-WinRT\$(Platform)\$(Configuration)\SDL-UWP;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\SDL3-uwp\include;..\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\SDL3-uwp\VisualC-WinRT\$(Platform)\$(Configuration)\SDL-UWP;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;FAUDIO_SDL3_PLATFORM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <AdditionalDependencies>WindowsApp.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;SDL3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;FAUDIO_DISABLE_DEBUGCONFIGURATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;FAUDIO_SDL3_PLATFORM;FAUDIO_DISABLE_DEBUGCONFIGURATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <AdditionalDependencies>WindowsApp.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;SDL3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
